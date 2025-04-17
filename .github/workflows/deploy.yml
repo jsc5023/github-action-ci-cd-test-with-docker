@@ -1,17 +1,18 @@
-
 name: deploy
-env:
-  IMAGE_NAME: app250416
 
 on:
   push:
     paths:
-      - ".github/workflows/**"
-      - "src/**"
-      - "build.gradle.kts"
-      - "Dockerfile"
+      - '.github/workflows/**'
+      - 'src/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'Dockerfile'
     branches:
       - main
+
+env:
+  DOCKER_IMAGE_NAME: app250416 # 공통으로 설정해도 됨 (하지만 output도 병행)
 
 jobs:
   makeTagAndRelease:
@@ -41,12 +42,14 @@ jobs:
     name: 도커 이미지 빌드와 푸시
     needs: makeTagAndRelease
     runs-on: ubuntu-latest
+    outputs:
+      owner_lc: ${{ steps.export_owner.outputs.owner_lc }}
+      image_name: ${{ steps.export_image.outputs.image_name }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: application-secret 추가
+      - name: application-secret.yml 생성
         env:
-          ACTIONS_STEP_DEBUG: true
           APPLICATION_SECRET: ${{ secrets.APPLICATION_SECRET_YML }}
         run: echo "$APPLICATION_SECRET" > src/main/resources/application-secret.yml
 
@@ -76,8 +79,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:${{ needs.makeTagAndRelease.outputs.tag_name }},
-            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/${{ steps.export_image.outputs.image_name }}:${{ needs.makeTagAndRelease.outputs.tag_name }},
+            ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/${{ steps.export_image.outputs.image_name }}:latest
 
   deploy:
     runs-on: ubuntu-latest
