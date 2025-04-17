@@ -3,7 +3,6 @@ package com.think.back2
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import software.amazon.awssdk.services.s3.S3Client
 
 @RestController
 class HomeController(
@@ -15,7 +14,7 @@ class HomeController(
 
     @GetMapping
     fun main(): String {
-        return "Hi, $secretWord"
+        return "[ Hi, $secretWord ]"
     }
 
     @GetMapping("/buckets")
